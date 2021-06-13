@@ -16,15 +16,15 @@ def cruzar(cromosomas, probabilidad):
 	indicesCruza=[]
 	for i in range(len(cromosomas)):
 		aleatorio=random.random()
-		if(aleatorio<=probabilidad):							#Seleeciona cromosomas a cruzarse
+		if(aleatorio<=probabilidad):						#Seleeciona cromosomas a cruzarse
 			indicesCruza+=[i]
-	if(len(indicesCruza)%2==1): del indicesCruza[-1]					#Verifica cantidad par de crozomas a cruzarse
+	if(len(indicesCruza)%2==1): del indicesCruza[-1]				#Verifica cantidad par de crozomas a cruzarse
 	pareja=[]
 	cromosomasCruzados=[]
 	for i in range(len(cromosomas)):
 		for j in range(len(indicesCruza)):
-			if(i==indicesCruza[j]): pareja+=[cromosomas[i]]				#Busca cromosoma a cruzarse
-		if(len(pareja)==2):								#Cruza cromosomas
+			if(i==indicesCruza[j]): pareja+=[cromosomas[i]]			#Busca cromosoma a cruzarse
+		if(len(pareja)==2):							#Cruza cromosomas
 			padre1=pareja[0]
 			padre2=pareja[1]
 			pareja=[]
@@ -39,7 +39,7 @@ def cruzar(cromosomas, probabilidad):
 					hijo1+=[padre2[k]]
 					hijo2+=[padre1[k]]
 			cromosomasCruzados+=[hijo1]+[hijo2]
-	for i in range(len(cromosomas)):							#Sustituye cromosomas originales
+	for i in range(len(cromosomas)):						#Sustituye cromosomas originales
 		for j in range(len(indicesCruza)):
 			if(i==indicesCruza[j]): cromosomas[i]=cromosomasCruzados[j]
 	return cromosomas
@@ -87,7 +87,7 @@ def mejorar(cromosomas, utilidades, opcionSeleccion, cromosomaElitista, utilidad
 			cromosomaElitista=cromosomas[posicion]
 	return cromosomaElitista, utilidadElitistaActual
 
-def codificarCromosoma(cromosoma, limite, numeros):
+def codificarCromosomaCombinatorio(cromosoma, limite, numeros):
 	bits=len(numeros[0])
 	bit=0
 	pesos=0
@@ -106,13 +106,32 @@ def codificarCromosoma(cromosoma, limite, numeros):
 			numero=[]
 	return peso
 
-def codificarCromosomas(cromosomas, limite, numeros):
+def codificarCromosomaCombinatoriosCombinatorio(cromosomas, limite, numeros):
 	pesos=[]
 	for i in range(len(cromosomas)):
 		cromosoma=cromosomas[i]
-		peso=codificarCromosoma(cromosoma, limite,  numeros)
+		peso=codificarCromosomaCombinatorio(cromosoma, limite,  numeros)
 		pesos+=[peso]
 	return pesos
+
+def codificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, xDecimales):
+	cromosomaX=[]
+	cromosomaY=[]
+	for j in range(len(cromosoma)):																				#Separa cromosoma en X y Y
+		if(j<tamanoX): cromosomaX+=[cromosoma[j]]
+		else: cromosomaY+=[cromosoma[j]]
+	xBase2=[]
+	for k in range(len(cromosomaX)-1, -1, -1): xBase2+=[cromosomaX[k]]															#Orden inverso de cromosoma
+	xBase10=0
+	for k in range(len(xBase2)): xBase10+=xBase2[k]*(2**k)																	#Convesion base 2 a base 10
+	xDecimal=inferiorX+xBase10*((superiorX-inferiorX)/((2**tamanoX)-1))															#Formato "flotante"
+	if(xDecimales!=None): xDecimales+=[xDecimal]
+	yBase2=[]
+	for k in range(len(cromosomaY)-1, -1, -1): yBase2+=[cromosomaY[k]]															#Orden inverso de cromosoma
+	yBase10=0
+	for k in range(len(yBase2)): yBase10+=yBase2[k]*(2**k)																	#Convesion base 2 a base 10
+	yDecimal=inferiorY+yBase10*((superiorY-inferiorY)/((2**tamanoY)-1))															#Formato "flotante"
+	return xDecimal, xDecimales, yDecimal
 
 def evaluarArbol(nodos, x, k):					#Recorre cromosoma como arbol en preorden
 	if(nodos==[]):						#Agrega nodo varable o contante aleatoriamente
@@ -197,7 +216,7 @@ def evaluarCombinatorioProgramacion(cromosomas, nombre, numeros, opcionSeleccion
 	contenido=open(nombre+'.txt')
 	coordenadas=[]
 	for linea in contenido: coordenadas+=[linea.rstrip().split('\t')]							#Obtiene coordendas de archivo TXT
-	pesos=codificarCromosomas(cromosomas, len(numeros), numeros)
+	pesos=codificarCromosomaCombinatoriosCombinatorio(cromosomas, len(numeros), numeros)
 	resultados=[]
 	errores=[]
 	utilidades=[]
@@ -233,7 +252,7 @@ def evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcion
 		punto=[]
 		for i in range(puntos): punto+=[row[i].value]
 		distancias+=[punto]
-	pesos=codificarCromosomas(cromosomas, puntos, numeros)
+	pesos=codificarCromosomaCombinatoriosCombinatorio(cromosomas, puntos, numeros)
 	inutilidades=[]
 	recorridos=[]
 	utilidades=[]
@@ -269,7 +288,7 @@ def evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcion
 	return aptitudes, cromosomaElitista, utilidadElitistaActual, aptitud
 
 def evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
-	pesos=codificarCromosomas(cromosomas, reinas, numeros)
+	pesos=codificarCromosomaCombinatoriosCombinatorio(cromosomas, reinas, numeros)
 	utilidades=[]
 	for i in range(len(pesos)):
 		pesosCromosoma=pesos[i]
@@ -310,22 +329,7 @@ def evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, infer
 	aptitudesFuncion=[]
 	for i in range(len(cromosomas)):
 		cromosoma=cromosomas[i]
-		cromosomaX=[]
-		cromosomaY=[]
-		for j in range(len(cromosoma)):																				#Separa cromosoma en X y Y
-			if(j<tamanoX): cromosomaX+=[cromosoma[j]]
-			else: cromosomaY+=[cromosoma[j]]
-		xBase2=[]
-		for k in range(len(cromosomaX)-1, -1, -1): xBase2+=[cromosomaX[k]]															#Orden inverso de cromosoma
-		xBase10=0
-		for k in range(len(xBase2)): xBase10+=xBase2[k]*(2**k)																	#Convesion base 2 a base 10
-		xDecimal=inferiorX+xBase10*((superiorX-inferiorX)/((2**tamanoX)-1))
-		xDecimales+=[xDecimal]																					#Formato "flotante"
-		yBase2=[]
-		for k in range(len(cromosomaY)-1, -1, -1): yBase2+=[cromosomaY[k]]															#Orden inverso de cromosoma
-		yBase10=0
-		for k in range(len(yBase2)): yBase10+=yBase2[k]*(2**k)																	#Convesion base 2 a base 10
-		yDecimal=inferiorY+yBase10*((superiorY-inferiorY)/((2**tamanoY)-1))															#Formato "flotante"
+		xDecimal, xDecimales, yDecimal=codificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, xDecimales)															#Formato "flotante"
 		if(opcionFuncion==1): funcion=-20*math.exp(-0.2*math.sqrt(0.5*((xDecimal**2)+(yDecimal**2))))-math.exp(0.5*(math.cos(2*math.pi*xDecimal)+math.cos(2*math.pi*yDecimal)))+math.e+20
 		elif(opcionFuncion==2):
 			if(i>=2):
@@ -355,10 +359,14 @@ numeros=[[0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 0, 1, 1], [0, 1, 0, 0], [
 
 cromosomas=generarPoblacion(tamanoCromosoma, tamanoPoblacion)
 aptitudesRelativas, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, None, None)
-aptitudesElitistasEjecucion+=[aptitudElitista]
-aptitudesPoblacionEjecucion+=[aptitudPoblacion]
+#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, None, None)
+#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, None, None)
+#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioProgramacion(cromosomas, nombre, numeros, opcionSeleccion, None, None)
 for j in range(generaciones):
 	cromosomas=seleccionar(cromosomas, aptitudesRelativas, opcionSeleccion)
 	cromosomas=cruzar(cromosomas, probabilidadCruza)
 	cromosomas=mutar(cromosomas, probabilidadMutacion)
 	aptitudesRelativas, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, cromosomaElitista, aptitudElitista)
+	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
+	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
+	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioProgramacion(cromosomas, nombre, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
