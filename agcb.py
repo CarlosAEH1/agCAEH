@@ -7,45 +7,45 @@ def mostrarCromosomas(cromosomas):
 
 def mutar(cromosomas, probabilidad):
 	#print('\n\nMutacion')
-	for i in range(len(cromosomas)):
+	for i in range(len(cromosomas)):							#Recorre cromosomas
 		#print('\nCromosoma ', i+1)
-		cromosoma=cromosomas[i]
-		for j in range(len(cromosoma)):
-			aleatorio=random.random()
-			if(aleatorio<=probabilidad):
+		cromosoma=cromosomas[i]								#Cromosoma
+		for j in range(len(cromosoma)):							#Recorre cromosoma
+			aleatorio=random.random()						#Genera aleatorio
+			if(aleatorio<=probabilidad):						#Verifica probabilidad de mutacion
 				#print('-Posicion ', j, ', con numero aleatorio: ', aleatorio)
-				if(cromosoma[j]==0): cromosoma[j]=1
+				if(cromosoma[j]==0): cromosoma[j]=1				#Muta indice de cromosoma
 				else: cromosoma[j]=0
-		cromosomas[i]=cromosoma
+		cromosomas[i]=cromosoma								#Actualiza cromosoma
 	#mostrarCromosomas(cromosomas)
 	return cromosomas
 
 def cruzar(cromosomas, probabilidad):
 	#print('\n\nCruza\n')
-	indicesCruza=[]
-	for i in range(len(cromosomas)):
-		aleatorio=random.random()
-		if(aleatorio<=probabilidad):							#Seleeciona cromosomas a cruzarse
+	posicionesCruza=[]
+	for i in range(len(cromosomas)):							#Recorre cromosomas
+		aleatorio=random.random()							#Genera aleatorio
+		if(aleatorio<=probabilidad):							#Verifica probabilidad de cruza
 			#print('Cromosoma ', i+1, ', con numero aleatorio: ', aleatorio)
-			indicesCruza+=[i]
-	if(len(indicesCruza)%2==1): del indicesCruza[-1]					#Verifica cantidad par de crozomas a cruzarse
+			posicionesCruza+=[i]							#Posiciones de cruza
+	if(len(posicionesCruza)%2==1): del posicionesCruza[-1]					#Verifica parejas
 	pareja=[]
 	cromosomasCruzados=[]
-	for i in range(len(cromosomas)):
-		for j in range(len(indicesCruza)):
-			if(i==indicesCruza[j]): pareja+=[cromosomas[i]]				#Busca cromosoma a cruzarse
-		if(len(pareja)==2):								#Cruza cromosomas
+	for i in range(len(cromosomas)):							#Recorre cromosomas
+		for j in range(len(posicionesCruza)):						#Recorre posiciones de cruza
+			if(i==posicionesCruza[j]): pareja+=[cromosomas[i]]			#Cromosomas a cruzarse
+		if(len(pareja)==2):								#Verifica pareja
 			padre1=pareja[0]
 			padre2=pareja[1]
 			pareja=[]
 			#print('\nPadre 1: ', padre1)
 			#print('Padre 2: ', padre2)
-			posicion=random.randrange(len(cromosomas[i]))
-			#print('\nPosicion de cruza: ', posicion)
+			indice=random.randrange(len(cromosomas[i]))				#Indice de cruza
+			#print('\nIndice de cruza: ', indice)
 			hijo1=[]
 			hijo2=[]
-			for k in range(len(cromosomas[i])):
-				if(k<posicion):
+			for k in range(len(cromosomas[i])):					#Recorre cromosoma
+				if(k<indice):							#Verifica indice de cruza
 					hijo1+=[padre1[k]]
 					hijo2+=[padre2[k]]
 				else:
@@ -53,10 +53,10 @@ def cruzar(cromosomas, probabilidad):
 					hijo2+=[padre1[k]]
 			#print('\nHijo 1: ', hijo1)
 			#print('Hijo 2: ', hijo2)
-			cromosomasCruzados+=[hijo1]+[hijo2]
-	for i in range(len(cromosomas)):							#Sustituye cromosomas originales
-		for j in range(len(indicesCruza)):
-			if(i==indicesCruza[j]): cromosomas[i]=cromosomasCruzados[j]
+			cromosomasCruzados+=[hijo1]+[hijo2]					#Cromosomas cruzados
+	for i in range(len(cromosomas)):							#Recorre cromosomas
+		for j in range(len(posicionesCruza)):						#Recorre posiciones de cruza
+			if(i==posicionesCruza[j]): cromosomas[i]=cromosomasCruzados[j]		#Actualiza cromosomas
 	#mostrarCromosomas(cromosomas)
 	return cromosomas
 
@@ -65,16 +65,16 @@ def seleccionar(cromosomas, aptitudesRelativas, opcionSeleccion):
 	aptitudAcumulada=0
 	aptitudesAcumuladas=[]
 	#print('Cromosoma\tAptitud relativa\tAptitud acumulada')
-	for i in range(len(aptitudesRelativas)):							#Calcula aptitud acumulada
-		aptitudAcumulada+=aptitudesRelativas[i]
+	for i in range(len(aptitudesRelativas)):							#Recorre aptitudes relativas
+		aptitudAcumulada+=aptitudesRelativas[i]							#Aptitud acumulada
 		#print(str(i+1)+'\t'+str(aptitudesRelativas[i])+'\t'+str(aptitudAcumulada))
-		aptitudesAcumuladas+=[aptitudAcumulada]
+		aptitudesAcumuladas+=[aptitudAcumulada]							#Aptitudes acumuladas
 	cromosomasSeleccionados=[]
 	#print('\n')
-	for i in range(len(cromosomas)):								#Selecciona cromosomas
-		aleatorio=random.random()
-		for j in range(len(aptitudesAcumuladas)):
-			if(aptitudesAcumuladas[j]>aleatorio):
+	for i in range(len(cromosomas)):								#Recorre cromosomas cromosomas
+		aleatorio=random.random()								#Genera aleatorio
+		for j in range(len(aptitudesAcumuladas)):						#Recorre aptitudes acumuladas
+			if(aptitudesAcumuladas[j]>aleatorio):						#Compara aptitud acumulada y aleatorio
 				if(opcionSeleccion==1): cromosomasSeleccionados+=[cromosomas[j]]	#Maximizacion de aptitud acumulada
 				elif(opcionSeleccion==2): cromosomasSeleccionados+=[cromosomas[j-1]]	#Minimizacion de aptitud acumulada
 				break
@@ -82,30 +82,30 @@ def seleccionar(cromosomas, aptitudesRelativas, opcionSeleccion):
 	return cromosomasSeleccionados
 
 def mejorar(cromosomas, utilidades, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
-	if(opcionSeleccion==1):										#Obtiene el mejor cromosoma
-		utilidadElitistaActual=max(utilidades)
-		if(utilidadElitistaAnterior is None): utilidadElitistaAnterior=utilidadElitistaActual
-		if(utilidadElitistaAnterior>utilidadElitistaActual):					#Sustituye peor cromosoma por mejor cromosoma
-			utilidadVulgar=min(utilidades)
-			posicion=utilidades.index(utilidadVulgar)
-			cromosomas[posicion]=cromosomaElitista
-			utilidades[posicion]=utilidadElitistaAnterior
-			utilidadElitistaActual=utilidadElitistaAnterior
+	if(opcionSeleccion==1):										#Maximizacion
+		utilidadElitistaActual=max(utilidades)							#Utilidad maxima
+		if(utilidadElitistaAnterior is None): utilidadElitistaAnterior=utilidadElitistaActual	#Verifica utilidad maxima anterior
+		if(utilidadElitistaAnterior>utilidadElitistaActual):					#Compara utilidades maximas
+			utilidadVulgar=min(utilidades)							#Utilidad minima
+			posicion=utilidades.index(utilidadVulgar)					#Posicion de utilidad minima
+			cromosomas[posicion]=cromosomaElitista						#Sustituye cromosoma minimo por maximo
+			utilidades[posicion]=utilidadElitistaAnterior					#Sustituye utilidad minima por maxima
+			utilidadElitistaActual=utilidadElitistaAnterior					#Actualiza utilidad maxima
 		else:
-			posicion=utilidades.index(utilidadElitistaActual)
-			cromosomaElitista=cromosomas[posicion]
-	elif(opcionSeleccion==2):									#Obtiene el mejor cromosoma
-		utilidadElitistaActual=min(utilidades)
-		if(utilidadElitistaAnterior is None): utilidadElitistaAnterior=utilidadElitistaActual
-		if(utilidadElitistaAnterior<utilidadElitistaActual):					#Sustituye peor cromosoma por mejor cromosoma
-			utilidadVulgar=max(utilidades)
-			posicion=utilidades.index(utilidadVulgar)
-			cromosomas[posicion]=cromosomaElitista
-			utilidades[posicion]=utilidadElitistaAnterior
-			utilidadElitistaActual=utilidadElitistaAnterior
+			posicion=utilidades.index(utilidadElitistaActual)				#Posicion de utilidad maxima
+			cromosomaElitista=cromosomas[posicion]						#Actualiza cromosoma maximo
+	elif(opcionSeleccion==2):									#Minimizacion
+		utilidadElitistaActual=min(utilidades)							#Utilidad minima
+		if(utilidadElitistaAnterior is None): utilidadElitistaAnterior=utilidadElitistaActual	#Verifica utilidad minima anterior
+		if(utilidadElitistaAnterior<utilidadElitistaActual):					#Compara utilidades minimas
+			utilidadVulgar=max(utilidades)							#Utilidad maxima
+			posicion=utilidades.index(utilidadVulgar)					#Posicion de utilidad maxima
+			cromosomas[posicion]=cromosomaElitista						#Sustituye cromosoma maximo por minimo
+			utilidades[posicion]=utilidadElitistaAnterior					#Sustituye utilidad maxima por minima
+			utilidadElitistaActual=utilidadElitistaAnterior					#Actualiza utilidad minima
 		else:
-			posicion=utilidades.index(utilidadElitistaActual)
-			cromosomaElitista=cromosomas[posicion]
+			posicion=utilidades.index(utilidadElitistaActual)				#Posicion de utilidad minima
+			cromosomaElitista=cromosomas[posicion]						#Acualiza cromosoma minimo
 	return cromosomaElitista, utilidadElitistaActual
 
 def codificarCromosomaCombinatorio(cromosoma, limite, numeros):
@@ -285,14 +285,12 @@ def evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, infer
 
 def generarPoblacion(tamanoCromosomas, tamanoPoblacion):
 	cromosomas=[]
-	if(tamanoPoblacion>1):
-		for i in range(tamanoPoblacion):
-			cromosoma=[]
-			for j in range(tamanoCromosoma): cromosoma+=[random.choice((0, 1))]
-			cromosomas+=[cromosoma]
-		#mostrarCromosomas(cromosomas)
-		return cromosomas
-	else: print('\nError, introduciste un tamaño de población de cromosomas menor o igual a 1.')
+	for i in range(tamanoPoblacion):						#Recorre tamano de poblacion
+		cromosoma=[]
+		for j in range(tamanoCromosoma): cromosoma+=[random.choice((0, 1))]	#Genera cromosoma
+		cromosomas+=[cromosoma]							#Cromosomas
+	#mostrarCromosomas(cromosomas)
+	return cromosomas
 
 numeros4=[[0, 0], [0, 1], [1, 0], [1, 1]]
 numeros8=[[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
