@@ -108,6 +108,17 @@ def mejorar(cromosomas, utilidades, opcionSeleccion, cromosomaElitista, utilidad
 			cromosomaElitista=cromosomas[posicion]						#Acualiza cromosoma minimo
 	return cromosomaElitista, utilidadElitistaActual
 
+def calculaUtilidadSudoku(tablas, utilidad):
+	for i in range(len(tablas)):
+		tabla=tablas[i]
+		for j in range(len(tabla)):												#Busca repeticiones
+			valor=tabla[j]
+			j+=1
+			while(j<len(tabla)):
+				if(valor!=tabla[j]): utilidad+=1
+				j+=1
+	return utilidad
+
 def codificarCromosomaCombinatorio(cromosoma, limite, numeros):
 	bits=len(numeros[0])
 	bit=0
@@ -162,6 +173,66 @@ def codificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superi
 	yDecimal=inferiorY+yBase10*((superiorY-inferiorY)/((2**tamanoY)-1))						#Formato "flotante"
 	#print('Y en decimal: ', yDecimal)
 	return xDecimal, xDecimales, yDecimal
+
+def evaluarCombinatorioSudoku(cromosomas, cuadros, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
+	#print('\n\nEvaluación')
+	pesos=codificarCromosomasCombinatorio(cromosomas, cuadros, numeros)
+	utilidades=[]
+	for i in range(len(pesos)):
+		#print('\nCromosoma ', i+1)
+		pesosCromosoma=pesos[i]
+		utilidad=0
+		filas=[]
+		for j in range(cuadros):
+			fila=[]
+			for k in range(cuadros): fila+=[pesosCromosoma[(cuadros*j)+k]]
+			filas+=[fila]
+		#print('-Filas: ')
+		#for j in range(len(filas)): print(filas[j])
+		utilidad=calculaUtilidadSudoku(filas, utilidad)
+		columnas=[]
+		for j in range(cuadros):
+			columna=[]
+			for k in range(cuadros): columna+=[pesosCromosoma[(cuadros*k)+j]]
+			columnas+=[columna]
+		#print('-Columnas: ')
+		#for j in range(len(columnas)): print(columnas[j])
+		utilidad=calculaUtilidadSudoku(columnas, utilidad)
+		columna0=[]
+		columna1=[]
+		columna2=[]
+		for j in range(len(filas)):
+			fila=filas[j]
+			for k in range(len(fila)):
+				if(k<3): columna0+=[fila[k]]
+				elif(k<6): columna1+=[fila[k]]
+				elif(k<9): columna2+=[fila[k]]
+		cuadriculas=[]
+		for j in range(int(cuadros/3)):
+			cuadricula=[]
+			for k in range(cuadros): cuadricula+=[columna0[(cuadros*j)+k]]
+			cuadriculas+=[cuadricula]
+			cuadricula=[]
+			for k in range(cuadros): cuadricula+=[columna1[(cuadros*j)+k]]
+			cuadriculas+=[cuadricula]
+			cuadricula=[]
+			for k in range(cuadros): cuadricula+=[columna2[(cuadros*j)+k]]
+			cuadriculas+=[cuadricula]
+		#print('-Cuadriculas: ')
+		#for j in range(len(cuadriculas)): print(cuadriculas[j])
+		utilidad=calculaUtilidadSudoku(cuadriculas, utilidad)
+		utilidades+=[utilidad]
+	#print('\nUtilidad de cromosomas: ')
+	#for i in range(len(utilidades)): print('-Cromosoma ', i+1, ': ', utilidades[i])
+	cromosomaElitista, utilidadElitistaActual=mejorar(cromosomas, utilidades, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior)	#Implementa elitismo
+	aptitud=sum(utilidades)															#Calcula aptitud total
+	#print('\nUtilidad de la poblacion: ', aptitud)
+	aptitudes=[]
+	if(aptitud==0):
+		for i in range(len(utilidades)): aptitudes+=[0]
+	else:
+		for i in range(len(utilidades)): aptitudes+=[utilidades[i]/aptitud]
+	return aptitudes, cromosomaElitista, utilidadElitistaActual, aptitud
 
 def evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
 	#print('\n\nEvaluación')
@@ -300,6 +371,7 @@ cromosomas=generarPoblacion(tamanoCromosoma, tamanoPoblacion)
 aptitudesRelativas, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, None, None)
 #aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, None, None)
 #aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, None, None)
+#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioSudoku(cromosomas, cuadros, numeros16, opcionSeleccion, None, None)
 #aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioProgramacion(cromosomas, nombre, numeros, opcionSeleccion, None, None)
 for j in range(generaciones):
 	cromosomas=seleccionar(cromosomas, aptitudesRelativas, opcionSeleccion)
@@ -308,4 +380,5 @@ for j in range(generaciones):
 	aptitudesRelativas, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, cromosomaElitista, aptitudElitista)
 	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
 	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
+	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioSudoku(cromosomas, cuadros, numeros16, opcionSeleccion, cromosomaElitista, utilidadElitista)
 	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioProgramacion(cromosomas, nombre, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
