@@ -82,30 +82,41 @@ def seleccionar(cromosomas, aptitudesRelativas, opcionSeleccion):
 	return cromosomasSeleccionados
 
 def mejorar(cromosomas, utilidades, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
+	#print('\n\nElitismo')
+	#mostrarCromosomas(cromosomas)
+	#print('\nCromosoma elitista anterior: ', cromosomaElitista)
+	#print('Utilidad: ', utilidadElitistaAnterior)
 	if(opcionSeleccion==1):										#Maximizacion
 		utilidadElitistaActual=max(utilidades)							#Utilidad maxima
 		if(utilidadElitistaAnterior is None): utilidadElitistaAnterior=utilidadElitistaActual	#Verifica utilidad maxima anterior
 		if(utilidadElitistaAnterior>utilidadElitistaActual):					#Compara utilidades maximas
 			utilidadVulgar=min(utilidades)							#Utilidad minima
 			posicion=utilidades.index(utilidadVulgar)					#Posicion de utilidad minima
-			cromosomas[posicion]=cromosomaElitista						#Sustituye cromosoma minimo por maximo
+			mejorCromosoma=cromosomaElitista[:]						#Copia cromosoma maximo
+			cromosomas[posicion]=mejorCromosoma						#Sustituye cromosoma minimo por maximo
 			utilidades[posicion]=utilidadElitistaAnterior					#Sustituye utilidad minima por maxima
 			utilidadElitistaActual=utilidadElitistaAnterior					#Actualiza utilidad maxima
 		else:
 			posicion=utilidades.index(utilidadElitistaActual)				#Posicion de utilidad maxima
-			cromosomaElitista=cromosomas[posicion]						#Actualiza cromosoma maximo
+			mejorCromosoma=cromosomas[posicion]
+			cromosomaElitista=mejorCromosoma[:]						#Actualiza cromosoma maximo
 	elif(opcionSeleccion==2):									#Minimizacion
 		utilidadElitistaActual=min(utilidades)							#Utilidad minima
 		if(utilidadElitistaAnterior is None): utilidadElitistaAnterior=utilidadElitistaActual	#Verifica utilidad minima anterior
 		if(utilidadElitistaAnterior<utilidadElitistaActual):					#Compara utilidades minimas
 			utilidadVulgar=max(utilidades)							#Utilidad maxima
 			posicion=utilidades.index(utilidadVulgar)					#Posicion de utilidad maxima
-			cromosomas[posicion]=cromosomaElitista						#Sustituye cromosoma maximo por minimo
+			mejorCromosoma=cromosomaElitista[:]						#Copia cromosoma minimo
+			cromosomas[posicion]=mejorCromosoma						#Sustituye cromosoma maximo por minimo
 			utilidades[posicion]=utilidadElitistaAnterior					#Sustituye utilidad maxima por minima
 			utilidadElitistaActual=utilidadElitistaAnterior					#Actualiza utilidad minima
 		else:
 			posicion=utilidades.index(utilidadElitistaActual)				#Posicion de utilidad minima
-			cromosomaElitista=cromosomas[posicion]						#Acualiza cromosoma minimo
+			mejorCromosoma=cromosomas[posicion]
+			cromosomaElitista=mejorCromosoma[:]						#Acualiza cromosoma minimo
+	#mostrarCromosomas(cromosomas)
+	#print('\nCromosoma elitista actual: ', cromosomaElitista)
+	#print('Utilidad: ', utilidadElitistaActual)
 	return cromosomaElitista, utilidadElitistaActual
 
 def calculaUtilidadSudoku(tablas, utilidad):
