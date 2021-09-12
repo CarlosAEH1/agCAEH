@@ -5,18 +5,30 @@ def mostrarCromosomas(cromosomas):
 	print('\n\nPoblacion\n')
 	for i in range(len(cromosomas)): print('Cromosoma ', i+1, ': '+str(cromosomas[i]))
 
-def mutar(cromosomas, probabilidad):
+def mutar(cromosomas, opcionCodificacion, probabilidad):
 	#print('\n\nMutacion')
-	for i in range(len(cromosomas)):							#Recorre cromosomas
-		#print('\nCromosoma ', i+1)
-		cromosoma=cromosomas[i]								#Cromosoma
-		for j in range(len(cromosoma)):							#Recorre cromosoma
-			aleatorio=random.random()						#Genera aleatorio
-			if(aleatorio<=probabilidad):						#Verifica probabilidad de mutacion
-				#print('-Posicion ', j, ', con numero aleatorio: ', aleatorio)
-				if(cromosoma[j]==0): cromosoma[j]=1				#Muta indice de cromosoma
-				else: cromosoma[j]=0
-		cromosomas[i]=cromosoma								#Actualiza cromosoma
+	for i in range(len(cromosomas)):									#Recorre cromosomas
+		if(opcionCodificacion==1):
+			#print('\nCromosoma ', i+1)
+			cromosoma=cromosomas[i]									#Cromosoma
+			for j in range(len(cromosoma)):								#Recorre cromosoma
+				aleatorio=random.random()							#Genera aleatorio
+				if(aleatorio<=probabilidad):							#Verifica probabilidad de mutacion
+					#print('-Posicion ', j, ', con numero aleatorio: ', aleatorio)
+					if(cromosoma[j]==0): cromosoma[j]=1					#Muta indice de cromosoma
+					else: cromosoma[j]=0
+		elif(opcionCodificacion==2):
+			aleatorio=random.random()								#Genera aleatorio
+			if(aleatorio<=probabilidad):								#Verifica probabilidad de mutacion
+				#print('\nCromosoma ', i+1, ', con numero aleatorio: ', aleatorio)
+				cromosoma=cromosomas[i]								#Cromosoma
+				posicion1=random.randrange(len(cromosoma))					#Selecciona dos posiciones de cromosoma
+				posicion2=posicion1
+				while(posicion2==posicion1): posicion2=random.randrange(len(cromosoma))
+				peso1=cromosoma[posicion1]
+				peso2=cromosoma[posicion2]
+				cromosoma[posicion1]=peso2							#Intercambia posiciones de cromosoma
+				cromosoma[posicion2]=peso1
 	#mostrarCromosomas(cromosomas)
 	return cromosomas
 
@@ -130,7 +142,7 @@ def calculaUtilidadSudoku(tablas, utilidad):
 				j+=1
 	return utilidad
 
-def codificarCromosomaCombinatorio(cromosoma, limite, numeros):
+def decodificarCromosomaCombinatorio(cromosoma, limite, numeros):
 	bits=len(numeros[0])
 	bit=0
 	pesos=0
@@ -150,17 +162,17 @@ def codificarCromosomaCombinatorio(cromosoma, limite, numeros):
 	#print('-Peso: '+str(peso))
 	return peso
 
-def codificarCromosomasCombinatorio(cromosomas, limite, numeros):
+def decodificarCromosomasCombinatorio(cromosomas, limite, numeros):
 	pesos=[]
 	for i in range(len(cromosomas)):
 		cromosoma=cromosomas[i]
-		peso=codificarCromosomaCombinatorio(cromosoma, limite,  numeros)
+		peso=decodificarCromosomaCombinatorio(cromosoma, limite,  numeros)
 		pesos+=[peso]
 	#print('\nPesos de cromosomas: ')
 	#for i in range(len(pesos)): print('-Cromosoma ', i+1, ': ', pesos[i])
 	return pesos
 
-def codificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, xDecimales):
+def decodificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, xDecimales):
 	cromosomaX=[]
 	cromosomaY=[]
 	for j in range(len(cromosoma)):											#Separa cromosoma en X y Y
@@ -185,9 +197,10 @@ def codificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superi
 	#print('Y en decimal: ', yDecimal)
 	return xDecimal, xDecimales, yDecimal
 
-def evaluarCombinatorioSudoku(cromosomas, cuadros, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
+def evaluarCombinatorioSudoku(cromosomas, opcionCodificacion, cuadros, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
 	#print('\n\nEvaluación')
-	pesos=codificarCromosomasCombinatorio(cromosomas, cuadros, numeros)
+	if(opcionCodificacion==1): pesos=decodificarCromosomasCombinatorio(cromosomas, cuadros, numeros)
+	elif(opcionCodificacion==2): pesos=cromosomas[:]
 	utilidades=[]
 	for i in range(len(pesos)):
 		#print('\nCromosoma ', i+1)
@@ -245,7 +258,7 @@ def evaluarCombinatorioSudoku(cromosomas, cuadros, numeros, opcionSeleccion, cro
 		for i in range(len(utilidades)): aptitudes+=[utilidades[i]/aptitud]
 	return aptitudes, cromosomaElitista, utilidadElitistaActual, aptitud
 
-def evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
+def evaluarCombinatorioViajero(cromosomas, opcionCodificacion, nombre, hoja, puntos, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
 	#print('\n\nEvaluación')
 	archivo=openpyxl.load_workbook(nombre+'.xlsx')
 	pagina=archivo.get_sheet_by_name(hoja)
@@ -256,7 +269,8 @@ def evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcion
 		distancias+=[punto]
 	#print('Matriz de distancias')
 	#for i in range(puntos): print(distancias[i])
-	pesos=codificarCromosomasCombinatorio(cromosomas, puntos, numeros)
+	if(opcionCodificacion==1): pesos=decodificarCromosomasCombinatorio(cromosomas, puntos, numeros)
+	elif(opcionCodificacion==2): pesos=cromosomas[:]
 	inutilidades=[]
 	recorridos=[]
 	utilidades=[]
@@ -298,9 +312,10 @@ def evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcion
 	for i in range(len(utilidades)): aptitudes+=[utilidades[i]/aptitud]
 	return aptitudes, cromosomaElitista, utilidadElitistaActual, aptitud
 
-def evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
+def evaluarCombinatorioReinas(cromosomas, opcionCodificacion, reinas, numeros, opcionSeleccion, cromosomaElitista, utilidadElitistaAnterior):
 	#print('\n\nEvaluación')
-	pesos=codificarCromosomasCombinatorio(cromosomas, reinas, numeros)
+	if(opcionCodificacion==1): pesos=decodificarCromosomasCombinatorio(cromosomas, reinas, numeros)
+	elif(opcionCodificacion==2): pesos=cromosomas[:]
 	utilidades=[]
 	for i in range(len(pesos)):
 		pesosCromosoma=pesos[i]
@@ -346,7 +361,7 @@ def evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, infer
 	for i in range(len(cromosomas)):
 		#print('\nCromosoma', i+1)
 		cromosoma=cromosomas[i]
-		xDecimal, xDecimales, yDecimal=codificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, xDecimales)
+		xDecimal, xDecimales, yDecimal=decodificarCromosomaParametrico(cromosoma, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, xDecimales)
 		if(opcionFuncion==1): funcion=-20*math.exp(-0.2*math.sqrt(0.5*((xDecimal**2)+(yDecimal**2))))-math.exp(0.5*(math.cos(2*math.pi*xDecimal)+math.cos(2*math.pi*yDecimal)))+math.e+20
 		elif(opcionFuncion==2):
 			if(i>=2):
@@ -365,31 +380,30 @@ def evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, infer
 	for i in range(len(aptitudesFuncion)): aptitudesRelativas+=[aptitudesFuncion[i]/aptitudPoblacion]												#Calcula aptitudes relativas
 	return aptitudesRelativas, cromosomaElitista, aptitudElitistaActual, aptitudPoblacion
 
-def generarPoblacion(tamanoCromosomas, tamanoPoblacion):
+def generarPoblacion(limite, tamanoCromosomas, tamanoPoblacion, opcionCodificacion):
 	cromosomas=[]
-	for i in range(tamanoPoblacion):						#Recorre tamano de poblacion
+	for i in range(tamanoPoblacion):							#Recorre tamano de poblacion
 		cromosoma=[]
-		for j in range(tamanoCromosoma): cromosoma+=[random.choice((0, 1))]	#Genera cromosoma
-		cromosomas+=[cromosoma]							#Cromosomas
+		if(opcionCodificacion==None or opcionCodificacion==1):
+			for j in range(tamanoCromosoma): cromosoma+=[random.choice((0, 1))]	#Genera cromosoma binario
+		elif(opcionCodificacion==2):
+			for j in range(tamanoCromosoma): cromosoma+=[random.randrange(limite)]	#Genera cromosoma entero
+		cromosomas+=[cromosoma]								#Cromosomas
 	#mostrarCromosomas(cromosomas)
 	return cromosomas
 
-numeros4=[[0, 0], [0, 1], [1, 0], [1, 1]]
-numeros8=[[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-numeros=[[0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 0, 1, 1], [0, 1, 0, 0], [0, 1, 0, 1], [0, 1, 1, 0], [0, 1, 1, 1], [1, 0, 0, 0], [1, 0, 0, 1], [1, 0, 1, 0], [1, 0, 1, 1], [1, 1, 0, 0], [1, 1, 0, 1], [1, 1, 1, 0], [1, 1, 1, 1]] 		#Numeros binarios
+numeros16=[[0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 0, 1, 1], [0, 1, 0, 0], [0, 1, 0, 1], [0, 1, 1, 0], [0, 1, 1, 1], [1, 0, 0, 0], [1, 0, 0, 1], [1, 0, 1, 0], [1, 0, 1, 1], [1, 1, 0, 0], [1, 1, 0, 1], [1, 1, 1, 0], [1, 1, 1, 1]] 		#Numeros binarios
 
-cromosomas=generarPoblacion(tamanoCromosoma, tamanoPoblacion)
-aptitudesRelativas, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, None, None)
-#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, None, None)
-#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, None, None)
-#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioSudoku(cromosomas, cuadros, numeros16, opcionSeleccion, None, None)
-#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioProgramacion(cromosomas, nombre, numeros, opcionSeleccion, None, None)
+cromosomas=generarPoblacion(genes, tamanoCromosoma, tamanoPoblacion, opcionCodificacion)
+aptitudes, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, None, None)
+#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, opcionCodificacion, genes, numeros16, opcionSeleccion, None, None)
+#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, opcionCodificacion, nombre, hoja, genes, numeros16, opcionSeleccion, None, None)
+#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioSudoku(cromosomas, opcionCodificacion, genes, numeros16, opcionSeleccion, None, None)
 for j in range(generaciones):
-	cromosomas=seleccionar(cromosomas, aptitudesRelativas, opcionSeleccion)
+	cromosomas=seleccionar(cromosomas, aptitudes, opcionSeleccion)
 	cromosomas=cruzar(cromosomas, probabilidadCruza)
-	cromosomas=mutar(cromosomas, probabilidadMutacion)
-	aptitudesRelativas, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, cromosomaElitista, aptitudElitista)
-	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, reinas, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
-	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, nombre, hoja, puntos, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
-	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioSudoku(cromosomas, cuadros, numeros16, opcionSeleccion, cromosomaElitista, utilidadElitista)
-	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioProgramacion(cromosomas, nombre, numeros, opcionSeleccion, cromosomaElitista, utilidadElitista)
+	cromosomas=mutar(cromosomas, opcionCodificacion, probabilidadMutacion)
+	aptitudes, cromosomaElitista, aptitudElitista, aptitudPoblacion=evaluarParametrico(cromosomas, tamanoX, tamanoY, inferiorX, superiorX, inferiorY, superiorY, opcionFuncion, opcionSeleccion, cromosomaElitista, aptitudElitista)
+	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioReinas(cromosomas, opcionCodificacion, genes, numeros16, opcionSeleccion, cromosomaElitista, utilidadElitista)
+	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioViajero(cromosomas, opcionCodificacion, nombre, hoja, genes, numeros16, opcionSeleccion, cromosomaElitista, utilidadElitista)
+	#aptitudes, cromosomaElitista, utilidadElitista, aptitud=evaluarCombinatorioSudoku(cromosomas, opcionCodificacion, genes, numeros16, opcionSeleccion, cromosomaElitista, utilidadElitista)
